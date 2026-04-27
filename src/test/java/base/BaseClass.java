@@ -22,7 +22,7 @@ public class BaseClass {
 	public static void setup() {
 
 //		String browser = ConfigReader.get("browser");
-		String browser = System.getProperty("browser", "chrome");
+		String browser = System.getProperty("browser");
 		
 		switch (browser) {
 		case "chrome":
@@ -39,9 +39,17 @@ public class BaseClass {
 			break;
 		}
 		
-		
 		driver.manage().window().maximize();
-		driver.get(ConfigReader.get("url"));
+		 
+		String env = System.getProperty("env");
+		
+		if(env == null || env.isEmpty()) {
+			env = ConfigReader.get("env");
+		}
+		
+		String url = ConfigReader.get(env + "_url");
+		driver.get(url);
+		
 		LoggerUtils.info("Launched the application");
 		int time = Integer.parseInt(ConfigReader.get("timeout"));
 		
