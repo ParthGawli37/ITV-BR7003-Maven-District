@@ -1,29 +1,26 @@
 pipeline {
     agent any
-    
+
     triggers {
-		parameterizedCron(
-			'05 16 * * * % BROWSER=chrome;ENVIRONMENT=qa'
-			'07 16 * * * % BROWSER=firefox;ENVIRONMENT=uat'
-			'09 16 * * * % BROWSER=edge;ENVIRONMENT=prod'
-			
-			)
-	
-	}
-    
-    
+        parameterizedCron("""
+            11 16 * * * % BROWSER=chrome;ENVIRONMENT=qa
+            13 16 * * * % BROWSER=firefox;ENVIRONMENT=uat
+            14 16 * * * % BROWSER=edge;ENVIRONMENT=prod
+        """)
+    }
+
     parameters {
-		choice(
-			name: 'BROWSER',
-			choices: ['chrome', 'edge', 'firefox'],
+        choice(
+            name: 'BROWSER',
+            choices: ['chrome', 'edge', 'firefox'],
             description: 'Select the browser to run tests on'
-		)
-		choice(
+        )
+        choice(
             name: 'ENVIRONMENT',
-            choices: ['dev', 'qa', 'prod'],
+            choices: ['dev', 'qa', 'uat', 'prod'],
             description: 'Select the environment to run tests on'
         )
-	}
+    }
 
     tools {
         jdk 'Java_JDK'
@@ -40,7 +37,13 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                bat "mvn clean test -Dbrowser=${params.BROWSER} -Denvironment=${params.ENVIRONMENT}"
+                script {
+                    if (isUnix()) {
+                        sh "mvn clean test -Dbrowser=${params.BROWSER} -Denvironment=${params.ENVIRONMENT}"
+                    } else {
+                        bat "mvn clean test -Dbrowser=${params.BROWSER} -Denvironment=${params.ENVIRONMENT}"
+                    }
+                }
             }
         }
     }
